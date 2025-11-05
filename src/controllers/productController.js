@@ -32,6 +32,21 @@ export const crearProducto = async(req,res) =>{
         res.status(500).json({msg:'Error al crear el producto',error:error.message});
     }
 };
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+//PUT/api/productos
+//para actualizar un producto por id
+
+export const actualizarProducto = async()=>{
+    return await Product.findByIdAndUpdate(
+        id,
+        {nombre,descripcion,stock,categoria,precio,marca},
+        {new: true}
+    )
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
 //------------------------------------------------------------------------------------------------------------------------------------------------
 //DELETE/api/productos/id
 //eliminar productos
