@@ -1,12 +1,11 @@
 import express from "express"
-import {User} from "../models/users.js"
-import { crearUsuario } from "../controllers/usersController.js"
+import { actualizarUsuario, crearUsuario, eliminarUsuario, mostrarUsuario } from "../controllers/usersController.js"
 
 export const usersRoutes = express.Router()
 
 usersRoutes.get("/",async(req,res)=>{
     try {
-        const user = await User.find()
+        const user = await mostrarUsuario()
         if(user.length === 0){
             return res.status(204).json([])
         }
@@ -31,7 +30,7 @@ usersRoutes.post("/",async (req,res)=>{
 
 usersRoutes.delete("/:id",async (req,res)=>{
     const {id} = req.params
-    const userDelete = await User.findByIdAndDelete(id)
+    const userDelete = await eliminarUsuario(id)
     if(!userDelete){
         res.status(404).json({mensaje: `No se encontro al usuario a eliminar`})
     }
@@ -42,7 +41,7 @@ usersRoutes.put("/:id",async(req,res)=>{
     try{
         const {id} = req.params
         const {nombre,email,direccion,telefono} = req.body
-        const updateUser = await User.findByIdAndUpdate(
+        const updateUser = await actualizarUsuario(
             id,
             {nombre,email,direccion,telefono},
             {new:true}

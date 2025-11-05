@@ -1,7 +1,8 @@
-import { Product } from "../models/products"
+import { Product } from "../models/products.js"
 
 //POST/api/productos 
 //para crear productos 
+
 export const crearProducto = async(req,res) =>{
     try{
         //info sobre la solicitud
@@ -50,6 +51,7 @@ export const eliminarProducto = async(req,res) =>{
 
     }
 };
+
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
@@ -122,6 +124,7 @@ const filtrarProductos = async(req,res)=>{
 //obtener los productos más reseñados 
 //uso Resenas y no reseñas por la ñ y por que así esta en el pdf
 
+
 //acá habria que hacer un import {Resnenia} from .....
 export const productosReseniados = async(req,res)=>{
     try{
@@ -150,6 +153,7 @@ export const productosReseniados = async(req,res)=>{
         res.status(500).json({msg:'Error al obtener top productos',error:error.message});
     }
 };
+
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
