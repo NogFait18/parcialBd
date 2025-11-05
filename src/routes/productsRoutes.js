@@ -4,7 +4,10 @@ import {
   crearProducto, 
   listarProductos, 
   actualizarProducto, 
-  eliminarProducto
+  eliminarProducto,
+  filtrarProductos,
+  productosReseniados,
+  actualizarStock
 } from "../controllers/productController.js"
 
 export const productsRoutes = express.Router()
@@ -12,7 +15,7 @@ export const productsRoutes = express.Router()
 // GET: obtener todos los productos
 productsRoutes.get("/", async (req, res) => {
   try {
-    const products = await obtenerProductos()
+    const products = await listarProductos()
     if (products.length === 0) {
       return res.status(204).json([])
     }
@@ -25,7 +28,7 @@ productsRoutes.get("/", async (req, res) => {
 // POST: crear un producto
 productsRoutes.post("/", async (req, res) => {
   try {
-    const { nombre, descripcion, stock, categoria, marca} = req.body
+    const { nombre, descripcion, stock, categoria,precio, marca} = req.body
     if (!nombre || !descripcion || !stock || !categoria || !marca) {
       return res.status(400).json({ mensaje: "Faltan parámetros" })
     }
@@ -40,7 +43,7 @@ productsRoutes.post("/", async (req, res) => {
 productsRoutes.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params
-    const eliminado = await eliminarProductos(id)
+    const eliminado = await eliminarProducto(id)
     if (!eliminado) {
       return res.status(404).json({ mensaje: "Producto no encontrado" })
     }
@@ -64,3 +67,20 @@ productsRoutes.put("/:id", async (req, res) => {
     res.status(500).json({ mensaje: `Error al actualizar producto: ${error}` })
   }
 })
+
+
+// GET /api/productos/filtro 
+// filtar por precios y marca
+productsRoutes.get("/filtro",filtrarProductos)
+
+
+//GET /api/productos/top 
+//obtener los productos más reseñados 
+
+productsRoutes.get("/top",productosReseniados)
+
+
+//PATCH api/productos/:id/stock 
+//actualizar stock
+
+productsRoutes.patch("/:id/stock",actualizarStock)

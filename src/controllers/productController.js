@@ -6,7 +6,7 @@ import { Product } from "../models/products.js"
 export const crearProducto = async(req,res) =>{
     try{
         //info sobre la solicitud
-        const{nombre,descripcion,stock,categoria,marca}=req.body;
+        const{nombre,descripcion,stock,categoria,precio,marca}=req.body;
         
         //validiación a categoria (cuando este la asociamos bien)
         const categoriaExiste = await categoria.findById(categoria);
@@ -180,7 +180,7 @@ export const actualizarStock = async(req, res)  => {
         //recibir el id
         const{id} = req.params;
         //recibir el stock
-        const{nuevoStock}=req.body;
+        const{nuevoStock}=req.params;
         //validación a revisar
         if(nuevoStock===undefined||nuevoStock<0){
             return res.status(400).json({msg:"El stock no puede ser negativo o nulo"});
