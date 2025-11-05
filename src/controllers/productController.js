@@ -95,7 +95,7 @@ export const listarProductos = async(req,res)=>{
 
 //GET /api/productos/filtro 
 //filtrar los productos por rango de precio y marca
-const filtrarProductos = async(req,res)=>{
+export const filtrarProductos = async(req,res)=>{
     const{precioMin,precioMax,marca}=req.query;
 
     //creamos un objeto de filtro con el $match

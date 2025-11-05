@@ -5,7 +5,7 @@ import { Cart } from "../models/carts";
 
 export const crearCarrito = async (req,res)=>{
     try{
-        const {usuarioId} = req.body
+        const {usuarioId} = req.params
         const carritoExistente = await Cart.findOne({usuario:usuarioId})
         if (carritoExistente) {
         return res.status(200).json({ mensaje: "Ya tienes un carrito activo", carrito: carritoExistente });
@@ -69,9 +69,9 @@ export const agregarProducto = async (req, res) => {
     }
 };
 
-/**
- * 🔁 Actualizar cantidad de un producto en el carrito
- */
+
+//Actualizar cantidad de un producto en el carrito
+
 export const actualizarCantidad = async (req, res) => {
     try {
         const { usuarioId, productoId, cantidad } = req.body;
@@ -91,9 +91,9 @@ export const actualizarCantidad = async (req, res) => {
     }
 };
 
-/**
- * ❌ Eliminar producto del carrito
- */
+
+//Eliminar producto del carrito
+
 export const eliminarProducto = async (req, res) => {
     try {
         const { usuarioId, productoId } = req.body;
@@ -110,9 +110,8 @@ export const eliminarProducto = async (req, res) => {
     }
 };
 
-/**
- * ✅ Finalizar carrito (por ejemplo, al realizar la compra)
- */
+//GET /api/carrito/:usuarioId/total
+
 export const finalizarCarrito = async (req, res) => {
     try {
         const { usuarioId } = req.body;
