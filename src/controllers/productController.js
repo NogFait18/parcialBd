@@ -2,29 +2,60 @@ import { Product } from "../models/products"
 
 //POST/api/productos 
 //para crear productos 
-export const crearProducto = async(nombre, descripcion, categoria, precio, stock)=>{
-    //agregar la validacion para categoria, todavia no la puedo hacer
-    const Product = new Product(
-        nombre,descripcion,categoria,precio,stock
-    )
-    const newProduct = await Product.save()
-    return{Product:newProduct}
-}
+export const crearProducto = async(req,res) =>{
+    try{
+        //info sobre la solicitud
+        const{nombre,descripcion,stock,categoria,marca}=req.body;
+        
+        //validiación a categoria (cuando este la asociamos bien)
+        const categoriaExiste = await categoria.findById(categoria);
+        if(!categoriaExiste){
+            return res.status(404).json({msg:'La categoria no existe'})
+        }
+        //creamos instancia con un objeto
+        const producto = new Product({
+            nombre,
+            descripcion,
+            categoria,
+            precio,stock
+        });
+        //guardar en la bd
+        const productoGuardado = await producto.save();
 
+        //respuesta al cliente
+        res.status(201).json({
+            msg:'Producto creado exitosamente',
+            producto:productoGuardado
+        });
+    }catch(error){
+        res.status(500).json({msg:'Error al crear el producto',error:error.message});
+    }
+};
 //------------------------------------------------------------------------------------------------------------------------------------------------
 //DELETE/api/productos/id
 //eliminar productos
-export const eliminarProducto =async(req,res){
+export const eliminarProducto = async(req,res) =>{
     try{
-        const Product
+        //conseguimos la ID de los parámetros de la URL
+        const {id}=req.params;
+        
+        //acá buscamos el objeto por su id y lo eliminamos
+        const product = await Product.findByIdAndDelete(id);
+        if(!product){
+            return res.status(404).json({msg:'Producto no encontrado :/'})
+        }
+        res.json({msg:'Producto eliminado correctamente!'})
+    }catch(error){
+        res.status(500).json({msg:'Error al eliminar',error:error.message});
+
     }
-}
+};
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
 //GET/api/productos
 //listar productos por categoría
-const listarProductos = async(req,res)=>{
+export const listarProductos = async(req,res)=>{
     try{
         const productos = await Product.aggregate([
             {
@@ -34,7 +65,8 @@ const listarProductos = async(req,res)=>{
                     foreignField:'_id',      //el campo en Categoria osea el _id
                     as:'categoriaInfo'       //nombre del nuevo array
                 }
-            }   
+            }   ,
+            {$unwind:'$categoriaInfo'} //esto es para que el array categoriaInfo sea mas presentable
         ]);
         res.json(productos);
     }catch(error){
@@ -88,24 +120,62 @@ const filtrarProductos = async(req,res)=>{
 //------------------------------------------------------------------------------------------------------------------------------------------------
 //GET /api/productos/top 
 //obtener los productos más reseñados 
-//uso Reseniados y no Reseñados por la "ñ"
+//uso Resenas y no reseñas por la ñ y por que así esta en el pdf
 
-export const productosReseniados = async(id, resenia)
+//acá habria que hacer un import {Resnenia} from .....
+export const productosReseniados = async(req,res)=>{
+    try{
+        const topProductos = await Resenia.aggregate([
+            //las agregamos por grupo y las contamos
+            {
+                $group:{
+                    _id:'$producto',
+                    totalResenas:{$sum:1}
+                }
+            },
+            //orden de mayor a manor
+            {$sort:{totalResenas:-1}},
+            //info de producto con $lookup 
+            {
+                $lookup:{
+                    from:'products',
+                    localField:'_id',
+                    foreignField:'_id',
+                    as:'productoInfo'
+                }
+            },
+            {$unwind:'$productoInfo'}
+        ]);
+    }catch(error){
+        res.status(500).json({msg:'Error al obtener top productos',error:error.message});
+    }
+};
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
 
 //PATCH api/productos/:id/stock 
 //actualizar stock
-export const actualizarStock = async(id, nuevoStock)  => {
-    //agrego una validación por la cantidad de stock
-    if (nuevoStock < 0){
-        throw new Error("El stock no puede ser negativo")
+export const actualizarStock = async(req, res)  => {
+    try{
+        //recibir el id
+        const{id} = req.params;
+        //recibir el stock
+        const{nuevoStock}=req.body;
+        //validación a revisar
+        if(nuevoStock===undefined||nuevoStock<0){
+            return res.status(400).json({msg:"El stock no puede ser negativo o nulo"});
+        }
+        //actualizamos el stock
+        const productoActualizado = await Product.findByIdAndUpdate(
+            id,
+            {$set:{stock:nuevoStock}},
+            {new:true}//a revisar, en teoria devolveria el doc actualizado
+        );
+        if(!productoActualizado){
+            return res.status(404).json({msg:'Producto no encontrado'}) //nose si es la forma correcta del error
+        }
+    }catch(error){
+        res.status(500).json({msg:"Error al actualizar el stock",error:error.message});
     }
-
-    const actualizarStock = await Product.findByIdAndUpdate(id,
-        {$set:{stock:nuevoStock}},
-        {new:true}// lo seteo así para que devuelva el doc actualizado
-    );
-    return actualizarStock;
 }
