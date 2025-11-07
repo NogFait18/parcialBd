@@ -92,7 +92,7 @@ export const actualizarCantidad = async (req, res) => {
 };
 
 
-//Eliminar producto del carrito
+//eliminar producto del carrito
 
 export const eliminarProducto = async (req, res) => {
     try {

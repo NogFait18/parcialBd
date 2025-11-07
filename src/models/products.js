@@ -1,13 +1,13 @@
 import mongoose from "mongoose"
 const productsModel = mongoose.Schema(
     {
-        nombre:{type:String, require:true},
+        nombre:{type:String, required:true},
         descripcion:{type:String,required:false},
 
         stock:{type:Number,required:true,min:0,default:0}, //no estoy seguro de que el stock sea 0 o 1
         categoria:{
             type:mongoose.Schema.Types.ObjectId,
-            ref:'Cagories',
+            ref:'Categories',
             required:true
         }, 
         precio: {type:Number, required:true},

@@ -1,4 +1,6 @@
 import { Product } from "../models/products.js"
+import {Categories} from "../models/categories.js"
+import {Resenia} from "../models/resenia.js"
 
 //POST/api/productos 
 //para crear productos 
@@ -9,7 +11,8 @@ export const crearProducto = async(req,res) =>{
         const{nombre,descripcion,stock,categoria,precio,marca}=req.body;
         
         //validiación a categoria (cuando este la asociamos bien)
-        const categoriaExiste = await categoria.findById(categoria);
+        const categoriaExiste = await Categories.findById(categoria);
+        
         if(!categoriaExiste){
             return res.status(404).json({msg:'La categoria no existe'})
         }
@@ -18,7 +21,9 @@ export const crearProducto = async(req,res) =>{
             nombre,
             descripcion,
             categoria,
-            precio,stock
+            precio,
+            stock,
+            marca
         });
         //guardar en la bd
         const productoGuardado = await producto.save();
@@ -29,6 +34,10 @@ export const crearProducto = async(req,res) =>{
             producto:productoGuardado
         });
     }catch(error){
+        // Manejo de error para validaciones (ej. campos requeridos, min/max)
+        if (error.name === 'ValidationError') {
+             return res.status(400).json({ msg: 'Error de validación de datos', error: error.message });
+        }
         res.status(500).json({msg:'Error al crear el producto',error:error.message});
     }
 };
@@ -37,15 +46,28 @@ export const crearProducto = async(req,res) =>{
 //PUT/api/productos
 //para actualizar un producto por id
 
-export const actualizarProducto = async()=>{
-    return await Product.findByIdAndUpdate(
-        id,
-        {nombre,descripcion,stock,categoria,precio,marca},
-        {new: true}
-    )
-}
+export const actualizarProducto = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const datosActualizar = req.body; 
 
-//------------------------------------------------------------------------------------------------------------------------------------------------
+        const productoActualizado = await Product.findByIdAndUpdate(
+            id,
+            datosActualizar, // Usamos el body directamente
+            { new: true, runValidators: true } 
+        );
+
+        if (!productoActualizado) {
+            return res.status(404).json({ msg: 'Producto no encontrado.' });
+        }
+
+        res.status(200).json({ msg: 'Producto actualizado correctamente.', producto: productoActualizado });
+
+    } catch(error) {
+        res.status(500).json({ msg: 'Error al actualizar el producto', error: error.message });
+    }
+};
+
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
 //DELETE/api/productos/id
@@ -60,7 +82,7 @@ export const eliminarProducto = async(req,res) =>{
         if(!product){
             return res.status(404).json({msg:'Producto no encontrado :/'})
         }
-        res.json({msg:'Producto eliminado correctamente!'})
+        res.status(200).json({msg:'Producto eliminado correctamente!'})
     }catch(error){
         res.status(500).json({msg:'Error al eliminar',error:error.message});
 
@@ -72,25 +94,35 @@ export const eliminarProducto = async(req,res) =>{
 //------------------------------------------------------------------------------------------------------------------------------------------------
 //GET/api/productos
 //listar productos por categoría
+// productsController.js
+
 export const listarProductos = async(req,res)=>{
     try{
         const productos = await Product.aggregate([
             {
                 $lookup:{
-                    from:'categorias',       //la collecion a unir
-                    localField:'categoria',  //el campo en Product osea el ObjectId
-                    foreignField:'_id',      //el campo en Categoria osea el _id
-                    as:'categoriaInfo'       //nombre del nuevo array
+                    from:'categories', // Nombre de la colección (pluralizado por Mongoose)
+                    localField:'categoria', // <--- ¡CORREGIDO! DEBE SER 'categoria'
+                    foreignField:'_id',      
+                    as:'categoriaInfo'       
                 }
-            }   ,
-            {$unwind:'$categoriaInfo'} //esto es para que el array categoriaInfo sea mas presentable
+            },
+            // Si hay productos sin categoría (lo cual no debería ocurrir si required:true),
+            // $unwind fallará. Pero si asumes que todos tienen categoría:
+            {$unwind:'$categoriaInfo'} 
         ]);
-        res.json(productos);
+        
+        if(productos.length === 0){
+            // Usar 200 OK con array vacío si quieres devolver la estructura JSON
+            return res.status(200).json([]); 
+        }
+
+        res.status(200).json(productos);
     }catch(error){
-        res.status(500).json({msg:'Error al listar productos'});
+        // Si hay un error, al menos devolvemos el error.message
+        res.status(500).json({msg:'Error al listar productos',error:error.message});
     }
 }
-
 //-----------------------------------------------------------------------------------------------------------------------------------------------
 
 //GET /api/productos/filtro 
@@ -98,7 +130,7 @@ export const listarProductos = async(req,res)=>{
 export const filtrarProductos = async(req,res)=>{
     const{precioMin,precioMax,marca}=req.query;
 
-    //creamos un objeto de filtro con el $match
+    
     const filtro={};
     const condiciones = [];
 
@@ -127,10 +159,10 @@ export const filtrarProductos = async(req,res)=>{
     try{
         //filtración con .find()
         const productos = await Product.find(filtro).populate('categoria');
-        res.json(productos);
+        res.status(200).json(productos);
     }
     catch(error){
-        res.status(500).json({msg:'Error al filtrar productos'})
+        res.status(500).json({msg:'Error al filtrar productos',error:error.message});
     }
 };
 
@@ -141,6 +173,7 @@ export const filtrarProductos = async(req,res)=>{
 
 
 //acá habria que hacer un import {Resnenia} from .....
+
 export const productosReseniados = async(req,res)=>{
     try{
         const topProductos = await Resenia.aggregate([
@@ -164,6 +197,7 @@ export const productosReseniados = async(req,res)=>{
             },
             {$unwind:'$productoInfo'}
         ]);
+        res.status(200).json(topProductos);
     }catch(error){
         res.status(500).json({msg:'Error al obtener top productos',error:error.message});
     }
@@ -177,23 +211,26 @@ export const productosReseniados = async(req,res)=>{
 //actualizar stock
 export const actualizarStock = async(req, res)  => {
     try{
-        //recibir el id
         const{id} = req.params;
-        //recibir el stock
-        const{nuevoStock}=req.params;
-        //validación a revisar
-        if(nuevoStock===undefined||nuevoStock<0){
-            return res.status(400).json({msg:"El stock no puede ser negativo o nulo"});
+        // CORREGIDO: Obtener nuevoStock de req.body
+        const{nuevoStock} = req.body; 
+
+        if(nuevoStock === undefined || typeof nuevoStock !== 'number' || nuevoStock < 0){
+            return res.status(400).json({msg:"El stock debe ser un número no negativo."});
         }
-        //actualizamos el stock
+        
+        // Usamos $set (Requerimiento del parcial)
         const productoActualizado = await Product.findByIdAndUpdate(
             id,
             {$set:{stock:nuevoStock}},
-            {new:true}//a revisar, en teoria devolveria el doc actualizado
+            {new:true}
         );
+        
         if(!productoActualizado){
-            return res.status(404).json({msg:'Producto no encontrado'}) //nose si es la forma correcta del error
+            return res.status(404).json({msg:'Producto no encontrado'}) 
         }
+        // CORREGIDO: mensaje de respuesta
+        res.status(200).json({msg:"Stock actualizado con exito",producto:productoActualizado}); 
     }catch(error){
         res.status(500).json({msg:"Error al actualizar el stock",error:error.message});
     }
