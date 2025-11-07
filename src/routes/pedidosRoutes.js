@@ -1,27 +1,28 @@
 import express from "express";
-// Importamos el controlador en español
+import { verifyToken, verifyAdmin } from "../middlewares/authMiddleware.js";
 import { 
-    crearPedido, 
-    listarPedidos, 
-    listarPedidosPorUsuario, 
-    actualizarEstadoPedido, 
-    obtenerEstadisticasPedidos,
-    obtenerPedidoPorId,
-    eliminarPedido,
-    editarPedido
+  crearPedido, 
+  listarPedidos, 
+  listarPedidosPorUsuario, 
+  actualizarEstadoPedido, 
+  obtenerEstadisticasPedidos,
+  obtenerPedidoPorId,
+  eliminarPedido,
+  editarPedido
 } from "../controllers/pedidosController.js";
-
-// const verifyToken = (req, res, next) => { ... };
-// const isAdmin = (req, res, next) => { ... };
-// const isOwnerOrAdmin = (req, res, next) => { ... };
 
 export const pedidosRoutes = express.Router();
 
-pedidosRoutes.post("/:usuarioId", crearPedido); 
-pedidosRoutes.get("", listarPedidos); 
-pedidosRoutes.get("/stats", obtenerEstadisticasPedidos); 
-pedidosRoutes.get("/user/:userId", listarPedidosPorUsuario); 
-pedidosRoutes.get("/:id", obtenerPedidoPorId); 
-pedidosRoutes.patch("/:id/status", actualizarEstadoPedido); 
-pedidosRoutes.delete("/:id", eliminarPedido); 
-pedidosRoutes.put("/:id",editarPedido)
+// 👤 Rutas de usuario (requieren token)
+pedidosRoutes.post("/:usuarioId", verifyToken, crearPedido);
+pedidosRoutes.get("/user/:userId", verifyToken, listarPedidosPorUsuario);
+
+// 🧮 Solo admin
+pedidosRoutes.get("/stats", verifyToken, verifyAdmin, obtenerEstadisticasPedidos);
+pedidosRoutes.patch("/:id/status", verifyToken, verifyAdmin, actualizarEstadoPedido);
+
+// 🧩 Otras (pueden ser públicas o protegidas según tu lógica)
+pedidosRoutes.get("", verifyToken, verifyAdmin, listarPedidos); // listar todos -> admin
+pedidosRoutes.get("/:id", verifyToken, obtenerPedidoPorId);
+pedidosRoutes.delete("/:id", verifyToken, verifyAdmin, eliminarPedido);
+pedidosRoutes.put("/:id", verifyToken, verifyAdmin, editarPedido);
