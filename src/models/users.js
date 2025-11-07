@@ -9,4 +9,4 @@ const userModel = mongoose.Schema(
         rol:{type:String}
     },
 )
-export const User = mongoose.model("users",userModel)
+export const User = mongoose.model("User",userModel)

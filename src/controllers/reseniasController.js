@@ -1,7 +1,7 @@
 import { Resenia } from "../models/resenia.js";
-import { Order } from "../models/orders.js"; // Necesario para validar la compra
-import { Product } from "../models/products.js";
-import { User } from "../models/users.js";
+import { Pedido } from "../models/pedido.js"; // Necesario para validar la compra
+/* import { Product } from "../models/products.js";
+import { User } from "../models/users.js"; */
 
 // ====================================================================================
 // POST /api/resenas
@@ -14,7 +14,7 @@ export const crearResenia = async (req, res) => {
         // --- 1. Validación de Compra ---
         // Buscamos si existe al menos UNA orden de este usuario que contenga este producto.
         // Usamos $match (comparación) para filtrar.
-        const ordenComprada = await Order.findOne({
+        const ordenComprada = await Pedido.findOne({
             'usuario': usuarioId,
             'items.producto': productoId
             // Opcional: Podrías añadir "estado: 'Entregado'" si quisieras ser más estricto
@@ -142,5 +142,66 @@ export const promedioCalificaciones = async (req, res) => {
         res.status(200).json({ success: true, data: stats });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// ====================================================================================
+// PUT /api/resenas/:id
+// Editar una reseña existente.
+// ====================================================================================
+export const editarResenia = async (req, res) => {
+    try {
+        const { reseniaId } = req.params;
+        const { calificacion, comentario } = req.body;
+
+        const reseniaEditada = await Resenia.findByIdAndUpdate(
+            reseniaId,
+            { calificacion, comentario },
+            { new: true } // devuelve la reseña actualizada
+        );
+
+        if (!reseniaEditada) {
+            return res.status(404).json({ success: false, message: "Reseña no encontrada." });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Reseña actualizada correctamente.",
+            data: reseniaEditada
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al editar la reseña.",
+            error: error.message
+        });
+    }
+};
+// ====================================================================================
+// DELETE /api/resenas/:id
+// Eliminar una reseña existente.
+// ====================================================================================
+export const eliminarResenia = async (req, res) => {
+    try {
+        const { reseniaId } = req.params;
+
+        const reseniaEliminada = await Resenia.findByIdAndDelete(reseniaId);
+
+        if (!reseniaEliminada) {
+            return res.status(404).json({ success: false, message: "Reseña no encontrada." });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Reseña eliminada correctamente."
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar la reseña.",
+            error: error.message
+        });
     }
 };

@@ -3,7 +3,9 @@ import {
     crearResenia,
     listarResenias,
     reseniasPorProducto,
-    promedioCalificaciones
+    promedioCalificaciones,
+    eliminarResenia,
+    editarResenia
 } from "../controllers/reseniasController.js";
 
 export const reseniasRoutes = express.Router();
@@ -14,7 +16,11 @@ reseniasRoutes.post("/", crearResenia);
 
 reseniasRoutes.get("/", listarResenias);
 
-reseniasRoutes.get("/product/:productId", reseniasPorProducto);
+reseniasRoutes.get("/producto/:productId", reseniasPorProducto);
 
 reseniasRoutes.get("/top", promedioCalificaciones);
+
+reseniasRoutes.delete("/:reseniaId", eliminarResenia);
+
+reseniasRoutes.put("/:reseniaId", editarResenia);
 

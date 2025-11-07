@@ -7,7 +7,8 @@ import {
     actualizarEstadoPedido, 
     obtenerEstadisticasPedidos,
     obtenerPedidoPorId,
-    eliminarPedido
+    eliminarPedido,
+    editarPedido
 } from "../controllers/pedidosController.js";
 
 // const verifyToken = (req, res, next) => { ... };
@@ -16,10 +17,11 @@ import {
 
 export const pedidosRoutes = express.Router();
 
-pedidosRoutes.post("/", crearPedido); 
-pedidosRoutes.get("/", listarPedidos); 
+pedidosRoutes.post("/:usuarioId", crearPedido); 
+pedidosRoutes.get("", listarPedidos); 
 pedidosRoutes.get("/stats", obtenerEstadisticasPedidos); 
 pedidosRoutes.get("/user/:userId", listarPedidosPorUsuario); 
 pedidosRoutes.get("/:id", obtenerPedidoPorId); 
 pedidosRoutes.patch("/:id/status", actualizarEstadoPedido); 
 pedidosRoutes.delete("/:id", eliminarPedido); 
+pedidosRoutes.put("/:id",editarPedido)

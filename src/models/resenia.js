@@ -10,7 +10,7 @@ const reseniaSchema = new Schema({
     
     usuario: {
         type: Schema.Types.ObjectId,
-        ref: 'users', // Se refiere al modelo "users" (tu nombre de modelo)
+        ref: 'User', // Se refiere al modelo "users" (tu nombre de modelo)
         required: [true, 'La reseña debe estar asociada a un usuario.']
     },
     calificacion: {

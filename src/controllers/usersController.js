@@ -1,4 +1,5 @@
 import { User } from "../models/users.js"
+import { Cart } from "../models/carts.js"
 
 //POST/api/usuarios
 //para crear usuario
@@ -40,12 +41,27 @@ export const mostrarUsuario = async () =>{
 //PUT/api/productos
 //para actualizar un producto por id
 
-export const actualizarUsuario = async()=>{
+export const actualizarUsuario = async(id,data)=>{
     return await User.findByIdAndUpdate(
         id,
-        {nombre,email,direccion,telefono,rol},
+        data,
         {new: true}
     )
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
+
+export const eliminarUsuarioYCarrito = async (id) => {
+  // Elimina el usuario
+  const usuarioEliminado = await User.findByIdAndDelete(id);
+  if (!usuarioEliminado) return null;
+
+  // Elimina también su carrito si existe
+  await Cart.deleteOne({ userId: id });
+
+  return usuarioEliminado;
+};
+
+export const obtenerUsuarioPorId = async (id) => {
+  return await User.findById(id);
+};

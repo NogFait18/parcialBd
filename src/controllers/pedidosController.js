@@ -1,11 +1,12 @@
-import { Pedido as pedido } from "../models/pedido.js"; 
+import { Pedido} from "../models/pedido.js"; 
 import { Cart } from "../models/carts.js"; 
 import { Product } from "../models/products.js"; 
 
 // POST /api/ordenes
 export const crearPedido = async (req, res) => {
     try {
-        const { usuarioId, metodoPago, direccionEnvio } = req.body;
+        const {usuarioId} = req.params
+        const {metodoPago, direccionEnvio } = req.body;
         if (!usuarioId || !metodoPago || !direccionEnvio) {
             return res.status(400).json({ success: false, error: 'Faltan campos obligatorios.' });
         }
@@ -137,5 +138,34 @@ export const eliminarPedido = async (req, res) => {
         res.status(200).json({ success: true, message: "Pedido eliminado." });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message, message: "Error al eliminar pedido." });
+    }
+};
+
+export const editarPedido = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { items, metodoPago, direccionEnvio, estado } = req.body;
+
+        const pedidoEditado = await Pedido.findByIdAndUpdate(
+            id,
+            {
+                ...(items && { items }),
+                ...(metodoPago && { metodoPago }),
+                ...(direccionEnvio && { direccionEnvio }),
+                ...(estado && { estado }),
+                actualizadoEn: new Date()
+            },
+            { new: true }
+        )
+        .populate("usuario", "nombre email")
+        .populate("items.producto", "nombre precio");
+
+        if (!pedidoEditado) {
+            return res.status(404).json({ success: false, message: "Pedido no encontrado." });
+        }
+
+        res.status(200).json({ success: true, message: "Pedido actualizado correctamente.", pedido: pedidoEditado });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message, message: "Error al editar pedido." });
     }
 };

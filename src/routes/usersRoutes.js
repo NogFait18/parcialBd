@@ -1,5 +1,5 @@
 import express from "express"
-import { actualizarUsuario, crearUsuario, eliminarUsuario, mostrarUsuario } from "../controllers/usersController.js"
+import { actualizarUsuario, crearUsuario, eliminarUsuario, eliminarUsuarioYCarrito, mostrarUsuario, obtenerUsuarioPorId } from "../controllers/usersController.js"
 
 export const usersRoutes = express.Router()
 
@@ -54,3 +54,34 @@ usersRoutes.put("/:id",async(req,res)=>{
         res.status(500).json({mensaje: `Error al actualizar al usuario`})
     }
 })
+
+//GET /api/users/:id → Detalle de un usuario
+usersRoutes.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const usuario = await obtenerUsuarioPorId(id);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+    res.status(200).json(usuario);
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    res.status(500).json({ mensaje: "Error al obtener usuario" });
+  }
+});
+
+usersRoutes.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const eliminado = await eliminarUsuarioYCarrito(id);
+
+    if (!eliminado) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    res.status(200).json({ mensaje: "Usuario y carrito eliminados correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar usuario:", error);
+    res.status(500).json({ mensaje: "Error al eliminar usuario" });
+  }
+});

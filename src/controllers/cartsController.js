@@ -1,54 +1,79 @@
-import { Cart } from "../models/carts";
+import { Cart } from "../models/carts.js";
 
 //POST/api/carrito
 //para crear un carrito
 
-export const crearCarrito = async (req,res)=>{
-    try{
-        const {usuarioId} = req.params
-        const carritoExistente = await Cart.findOne({usuario:usuarioId})
+export const crearCarrito = async (req, res) => {
+    try {
+        const { usuarioId } = req.params;
+        const { productos } = req.body; // recibe un array de productos opcional
+
+        // Verifica si ya existe un carrito
+        const carritoExistente = await Cart.findOne({ usuario: usuarioId });
         if (carritoExistente) {
-        return res.status(200).json({ mensaje: "Ya tienes un carrito activo", carrito: carritoExistente });
+            return res.status(200).json({
+                mensaje: "Ya tienes un carrito activo",
+                carrito: carritoExistente
+            });
         }
-        const nuevoCarrito = await Cart.create({usuario:usuarioId})
+
+        // Crea un nuevo carrito con productos si se pasaron
+        const nuevoCarrito = await Cart.create({
+            usuario: usuarioId,
+            productos: productos || []
+        });
+
         res.status(201).json(nuevoCarrito);
+
     } catch (error) {
         res.status(500).json({ mensaje: `Error al crear el carrito: ${error.message}` });
     }
-}
+};
+
 
 //------------------------------------------------------------------------------------------------------------------------------------------------
 //GET/api/carrito
 //para obtener carrito de un usuario por id
+// GET /api/carrito/:usuarioId
 export const obtenerCarrito = async (req, res) => {
     try {
         const { usuarioId } = req.params;
 
-        const carrito = await Cart.findOne({ usuario: usuarioId, estado: "activo" })
-        .populate("productos.producto", "nombre precio imagen")
-        .populate("usuario", "nombre email");
+        // Buscar carrito activo del usuario y popular usuario y productos
+        const carrito = await Cart.findOne({ usuario: usuarioId })
+            .populate({
+                path: "usuario",
+                select: "nombre email"
+            })
+            .populate({
+                path: "productos.producto",
+                select: "nombre precio"
+            });
 
         if (!carrito) {
-        return res.status(404).json({ mensaje: "No se encontró un carrito activo para este usuario" });
+            return res.status(404).json({ mensaje: "No se encontró un carrito activo para este usuario" });
         }
 
         res.status(200).json(carrito);
+
     } catch (error) {
         res.status(500).json({ mensaje: `Error al obtener el carrito: ${error.message}` });
     }
 };
+
 //------------------------------------------------------------------------------------------------------------------------------------------------
 
 export const agregarProducto = async (req, res) => {
     try {
-        const { usuarioId, productoId, cantidad } = req.body;
+        const {usuarioId} = req.params
+        const { productoId, cantidad } = req.body;
 
         // Verificar si el producto existe
         const producto = await Product.findById(productoId);
         if (!producto) return res.status(404).json({ mensaje: "Producto no encontrado" });
 
         // Buscar o crear el carrito activo
-        let carrito = await Cart.findOne({ usuario: usuarioId, estado: "activo" });
+        let carrito = await Cart.findOne({ usuario: usuarioId});
         if (!carrito) carrito = await Cart.create({ usuario: usuarioId });
 
         // Buscar si el producto ya está en el carrito
@@ -72,41 +97,56 @@ export const agregarProducto = async (req, res) => {
 
 //Actualizar cantidad de un producto en el carrito
 
-export const actualizarCantidad = async (req, res) => {
+export const actualizarCarrito = async (req, res) => {
     try {
-        const { usuarioId, productoId, cantidad } = req.body;
+        const{usuarioId} = req.params
+        const { productos } = req.body; // productos = [{producto: id, cantidad: num}, ...]
 
-        const carrito = await Cart.findOne({ usuario: usuarioId, estado: "activo" });
+        const carrito = await Cart.findOne({ usuario: usuarioId});
         if (!carrito) return res.status(404).json({ mensaje: "Carrito no encontrado" });
 
-        const producto = carrito.productos.find(p => p.producto.toString() === productoId);
-        if (!producto) return res.status(404).json({ mensaje: "El producto no está en el carrito" });
+        // Reemplaza los productos actuales por los nuevos
+        carrito.productos = productos.map(p => ({
+            producto: p.producto,
+            cantidad: p.cantidad
+        }));
 
-        producto.cantidad = cantidad;
         await carrito.save();
 
-        res.status(200).json({ mensaje: "Cantidad actualizada", carrito });
+        // Popular productos y usuario si querés enviar la info completa
+        await carrito.populate([
+        { path: "usuario", select: "nombre email" },
+        { path: "productos.producto", select: "nombre precio" }
+        ]);
+
+
+        res.status(200).json({ mensaje: "Carrito actualizado", carrito });
     } catch (error) {
-        res.status(500).json({ mensaje: `Error al actualizar cantidad: ${error.message}` });
+        res.status(500).json({ mensaje: `Error al actualizar el carrito: ${error.message}` });
     }
 };
 
 
 //eliminar producto del carrito
 
-export const eliminarProducto = async (req, res) => {
+// Reemplaza eliminarProducto
+export const eliminarCarrito = async (req, res) => {
     try {
-        const { usuarioId, productoId } = req.body;
+        const { usuarioId } = req.params;
 
-        const carrito = await Cart.findOne({ usuario: usuarioId, estado: "activo" });
-        if (!carrito) return res.status(404).json({ mensaje: "Carrito no encontrado" });
+        // Buscar y eliminar el carrito del usuario
+        const carritoEliminado = await Cart.findOneAndDelete({ usuario: usuarioId });
 
-        carrito.productos = carrito.productos.filter(p => p.producto.toString() !== productoId);
-        await carrito.save();
+        if (!carritoEliminado) {
+            return res.status(404).json({ mensaje: "No se encontró un carrito para eliminar" });
+        }
 
-        res.status(200).json({ mensaje: "Producto eliminado del carrito", carrito });
+        res.status(200).json({
+            mensaje: "Carrito eliminado correctamente",
+            carrito: carritoEliminado
+        });
     } catch (error) {
-        res.status(500).json({ mensaje: `Error al eliminar producto: ${error.message}` });
+        res.status(500).json({ mensaje: `Error al eliminar el carrito: ${error.message}` });
     }
 };
 
@@ -114,10 +154,10 @@ export const eliminarProducto = async (req, res) => {
 
 export const finalizarCarrito = async (req, res) => {
     try {
-        const { usuarioId } = req.body;
+        const { usuarioId } = req.params;
 
         // Buscar el carrito activo
-        const carrito = await Cart.findOne({ usuario: usuarioId, estado: "activo" }).populate("productos.producto", "nombre precio");
+        const carrito = await Cart.findOne({ usuario: usuarioId}).populate("productos.producto", "nombre precio");
         if (!carrito) return res.status(404).json({ mensaje: "No hay carrito activo" });
 
         // Calcular el total del carrito

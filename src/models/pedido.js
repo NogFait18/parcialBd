@@ -16,7 +16,7 @@ const itemPedidoSchema = new Schema({
 const pedidoSchema = new Schema({
     usuario: {
         type: Schema.Types.ObjectId,
-        ref: 'users', // Se refiere al modelo 'users' de tu compañero
+        ref: 'User', // Se refiere al modelo 'users' de tu compañero
         required: [true, 'El pedido debe estar asociado a un usuario.']
     },
     items: {

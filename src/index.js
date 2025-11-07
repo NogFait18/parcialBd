@@ -6,6 +6,7 @@ import { productsRoutes } from "./routes/productsRoutes.js"
 import { categoriesRoutes } from "./routes/categoriesRoutes.js"
 import { reseniasRoutes } from "./routes/reseniasRoutes.js"
 import { pedidosRoutes } from "./routes/pedidosRoutes.js"
+import { cartsRoutes } from "./routes/cartsRoutes.js"
 
 const app = express()
 app.use(express.json())
@@ -17,8 +18,9 @@ mongoose.connect(process.env.MONGO_URL,{dbName:process.env.DB_NAME}).then(()=>
 })
 app.use("/api/usuarios",usersRoutes)
 app.use("/api/productos",productsRoutes)
+app.use("/api/carrito",cartsRoutes)
 app.use("/api/categorias",categoriesRoutes)
-app.use("/api/ordenes",orderRoutes)
+app.use("/api/ordenes",pedidosRoutes)
 app.use("/api/resenas",reseniasRoutes)
 
 app.listen(process.env.PORT,()=>{

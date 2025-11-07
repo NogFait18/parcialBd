@@ -39,10 +39,10 @@ export const mostrarCategorias = async ()=>{
 //PUT/api/categorias
 //para actualizar una categoria por id
 
-export const actualizarCategoria = async()=>{
+export const actualizarCategoria = async(id,data)=>{
     return await Categories.findByIdAndUpdate(
         id,
-        {nombre,descripcion},
+        data,
         {new:true}
     )
 }

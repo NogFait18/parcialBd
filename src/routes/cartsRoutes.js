@@ -1,11 +1,11 @@
 import express from "express"
-import { actualizarCantidad, agregarProducto, crearCarrito, eliminarProducto, finalizarCarrito, obtenerCarrito } from "../controllers/cartsController"
+import {  actualizarCarrito, agregarProducto, crearCarrito, eliminarCarrito, finalizarCarrito, obtenerCarrito} from "../controllers/cartsController.js"
 
 export const cartsRoutes = express.Router()
 
-cartsRoutes.post("/:usuariosId",crearCarrito)
-cartsRoutes.delete("",eliminarProducto)
-cartsRoutes.put("",actualizarCantidad)
+cartsRoutes.post("/:usuarioId",crearCarrito)
+cartsRoutes.delete("/:usuarioId",eliminarCarrito)
+cartsRoutes.put("/:usuarioId",actualizarCarrito)
 cartsRoutes.post("",agregarProducto)
 cartsRoutes.get("/:usuarioId",obtenerCarrito)
 cartsRoutes.get("/:usuarioId/total",finalizarCarrito)
