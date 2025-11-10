@@ -1,9 +1,9 @@
 import { User } from "../models/users.js";
 import { Cart } from "../models/carts.js";
-import { validatePass, hashPass } from "../services/hashService.js";
-import { generateToken } from "../services/jwtService.js";
+import { validatePass, hashPassword } from "../services/password.service.js";
+import { generateToken } from "../services/auth.service.js";
 
-// ✅ Crear un usuario (registro)
+//  Crear un usuario (registro)
 export const crearUsuario = async (req, res) => {
   try {
     const { nombre, email, direccion, telefono, rol, contrasena } = req.body;
@@ -17,7 +17,7 @@ export const crearUsuario = async (req, res) => {
       return res.status(409).json({ mensaje: "El email ya está registrado" });
     }
 
-    const contrasenaHash = await hashPass(contrasena);
+    const contrasenaHash = await hashPassword(contrasena);
 
     const user = new User({
       nombre,
@@ -37,7 +37,7 @@ export const crearUsuario = async (req, res) => {
   }
 };
 
-// ✅ Obtener todos los usuarios (solo admin)
+//  Obtener todos los usuarios (solo admin)
 export const mostrarUsuario = async (req, res) => {
   try {
     const users = await User.find();
@@ -50,7 +50,7 @@ export const mostrarUsuario = async (req, res) => {
   }
 };
 
-// ✅ Obtener usuario por ID
+//  Obtener usuario por ID
 export const obtenerUsuarioPorId = async (req, res) => {
   try {
     const { id } = req.params;
@@ -62,7 +62,7 @@ export const obtenerUsuarioPorId = async (req, res) => {
   }
 };
 
-// ✅ Actualizar usuario
+// Actualizar usuario
 export const actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
@@ -82,7 +82,7 @@ export const actualizarUsuario = async (req, res) => {
   }
 };
 
-// ✅ Eliminar usuario (solo admin)
+// Eliminar usuario (solo admin)
 export const eliminarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
@@ -95,7 +95,7 @@ export const eliminarUsuario = async (req, res) => {
   }
 };
 
-// ✅ Eliminar usuario y carrito
+//  Eliminar usuario y carrito
 export const eliminarUsuarioYCarrito = async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,7 +110,7 @@ export const eliminarUsuarioYCarrito = async (req, res) => {
   }
 };
 
-// ✅ Login (devuelve token JWT)
+//  Login (devuelve token JWT)
 export const login = async (req, res) => {
   try {
     const { email, contrasena } = req.body;

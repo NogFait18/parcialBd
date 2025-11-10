@@ -13,7 +13,7 @@ import "dotenv/config";
 const app = express()
 app.use(express.json())
 
-mongoose.connect(process.env.MONGO_URL,{dbName:process.env.DB_NAME}).then(()=>
+mongoose.connect(process.env.MONGO_URI,{dbName:process.env.DB_NAME}).then(()=>
     console.log("Conexion Correcta")
 ).catch((e)=>{
     console.error("Error al conectarse con mongo",e)

@@ -6,7 +6,8 @@ const userModel = mongoose.Schema(
         email: {type:String},
         direccion: {type:String},
         telefono:{type:String},
-        rol:{type:String}
+        rol:{type:String},
+        contrasena: {type:String, required:true}
     },
 )
 export const User = mongoose.model("User",userModel)

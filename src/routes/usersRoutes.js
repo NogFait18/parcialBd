@@ -1,26 +1,28 @@
 import express from "express";
 import {
-  crearUsuario,
-  mostrarUsuario,
-  obtenerUsuarioPorId,
-  actualizarUsuario,
-  eliminarUsuario,
-  eliminarUsuarioYCarrito,
-  login,
+  crearUsuario,
+  mostrarUsuario,
+  obtenerUsuarioPorId,
+  actualizarUsuario,
+  eliminarUsuario,
+  eliminarUsuarioYCarrito,
+  login,
 } from "../controllers/usersController.js";
-import { verificarToken, verificarAdmin } from "../middlewares/authMiddleware.js";
+import { requireAuth, requireAdmin, requireOwnerOrAdmin } from "../middleware/authMiddleware.js";
 
 export const usersRoutes = express.Router();
 
-// 🔓 Público
+// Público
 usersRoutes.post("/login", login);
 usersRoutes.post("/", crearUsuario); // registro público
 
-// 🔐 Solo admin
-usersRoutes.get("/", verificarToken, verificarAdmin, mostrarUsuario);
-usersRoutes.delete("/:id", verificarToken, verificarAdmin, eliminarUsuario);
-usersRoutes.delete("/:id", verificarToken, verificarAdmin, eliminarUsuarioYCarrito);
+// Solo admin
+// Reemplazado verificarToken -> requireAuth y verificarAdmin -> requireAdmin
+usersRoutes.get("/", requireAuth, requireAdmin, mostrarUsuario); 
+usersRoutes.delete("/:id", requireAuth, requireAdmin, eliminarUsuario);
+usersRoutes.delete("/:id", requireAuth, requireAdmin, eliminarUsuarioYCarrito);
 
-// 🔐 Usuario autenticado
-usersRoutes.get("/:id", verificarToken, obtenerUsuarioPorId);
-usersRoutes.put("/:id", verificarToken, actualizarUsuario);
+// Usuario autenticado (Acceso al dueño o a un admin)
+// Reemplazado verificarToken -> requireAuth
+usersRoutes.get("/:id", requireAuth, obtenerUsuarioPorId);
+usersRoutes.put("/:id", requireAuth, actualizarUsuario);

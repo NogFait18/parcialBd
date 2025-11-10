@@ -1,4 +1,4 @@
-import { verifyToken } from "../service/tokenService.js";
+import { verifyToken } from "../services/auth.service.js";
 
 // Middleware que valida si el token es válido y agrega el usuario al request
 export const requireAuth = (req, res, next) => {

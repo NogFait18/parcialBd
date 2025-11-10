@@ -1,27 +1,31 @@
 import express from "express";
 import {
-  crearCategoria,
-  eliminarCategoria,
-  mostrarCategorias,
-  actualizarCategoria,
-  obtenerEstadisticasCategorias,
+  crearCategoria,
+  eliminarCategoria,
+  mostrarCategorias,
+  actualizarCategoria,
+  obtenerEstadisticasCategorias,
 } from "../controllers/categoriesController.js";
 
-import { verifyToken, isAdmin } from "../middlewares/authMiddleware.js";
+import { requireAuth, requireAdmin, requireOwnerOrAdmin } from "../middleware/authMiddleware.js";
 
 export const categoriesRoutes = express.Router();
 
-// 🌐 RUTA PÚBLICA: listar categorías
+// RUTA PÚBLICA: listar categorías
 categoriesRoutes.get("/", mostrarCategorias);
 
-// 🔒 ADMIN: crear categoría
-categoriesRoutes.post("/", verifyToken, isAdmin, crearCategoria);
+// ADMIN: crear categoría
+// Corrección: verifyToken -> requireAuth, isAdmin -> requireAdmin
+categoriesRoutes.post("/", requireAuth, requireAdmin, crearCategoria);
 
-// 🔒 ADMIN: eliminar categoría
-categoriesRoutes.delete("/:id", verifyToken, isAdmin, eliminarCategoria);
+// ADMIN: eliminar categoría
+// Corrección: verifyToken -> requireAuth, isAdmin -> requireAdmin
+categoriesRoutes.delete("/:id", requireAuth, requireAdmin, eliminarCategoria);
 
-// 🔒 ADMIN: actualizar categoría
-categoriesRoutes.put("/:id", verifyToken, isAdmin, actualizarCategoria);
+// ADMIN: actualizar categoría
+// Corrección: verifyToken -> requireAuth, isAdmin -> requireAdmin
+categoriesRoutes.put("/:id", requireAuth, requireAdmin, actualizarCategoria);
 
-// 🔒 ADMIN: estadísticas
-categoriesRoutes.get("/stats", verifyToken, isAdmin, obtenerEstadisticasCategorias);
+// ADMIN: estadísticas
+// Corrección: verifyToken -> requireAuth, isAdmin -> requireAdmin
+categoriesRoutes.get("/stats", requireAuth, requireAdmin, obtenerEstadisticasCategorias);
