@@ -1,7 +1,7 @@
 import { Categories } from "../models/categories.js";
 import { Product } from "../models/products.js";
 
-// 📦 GET /api/categorias → Listar todas las categorías (público)
+// GET /api/categorias → Listar todas las categorías (público)
 export const mostrarCategorias = async (req, res) => {
   try {
     const categories = await Categories.find();
@@ -14,7 +14,7 @@ export const mostrarCategorias = async (req, res) => {
   }
 };
 
-// ➕ POST /api/categorias → Crear una nueva categoría (solo admin)
+// POST /api/categorias → Crear una nueva categoría (solo admin)
 export const crearCategoria = async (req, res) => {
   try {
     const { nombre, descripcion } = req.body;
@@ -32,7 +32,7 @@ export const crearCategoria = async (req, res) => {
   }
 };
 
-// ✏️ PUT /api/categorias/:id → Actualizar categoría (solo admin)
+// PUT /api/categorias/:id → Actualizar categoría (solo admin)
 export const actualizarCategoria = async (req, res) => {
   try {
     const { id } = req.params;
@@ -54,7 +54,7 @@ export const actualizarCategoria = async (req, res) => {
   }
 };
 
-// ❌ DELETE /api/categorias/:id → Eliminar categoría (solo admin)
+// DELETE /api/categorias/:id → Eliminar categoría (solo admin)
 export const eliminarCategoria = async (req, res) => {
   try {
     const { id } = req.params;
@@ -70,7 +70,7 @@ export const eliminarCategoria = async (req, res) => {
   }
 };
 
-// 📊 GET /api/categorias/stats → Estadísticas de productos por categoría (solo admin)
+// GET /api/categorias/stats → Estadísticas de productos por categoría (solo admin)
 export const obtenerEstadisticasCategorias = async (req, res) => {
   try {
     const stats = await Product.aggregate([

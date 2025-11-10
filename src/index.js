@@ -7,7 +7,6 @@ import { categoriesRoutes } from "./routes/categoriesRoutes.js"
 import { reseniasRoutes } from "./routes/reseniasRoutes.js"
 import { pedidosRoutes } from "./routes/pedidosRoutes.js"
 import { cartsRoutes } from "./routes/cartsRoutes.js"
-import "dotenv/config";
 
 
 const app = express()

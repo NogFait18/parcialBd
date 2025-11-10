@@ -19,7 +19,6 @@ usersRoutes.post("/", crearUsuario); // registro público
 // Solo admin
 // Reemplazado verificarToken -> requireAuth y verificarAdmin -> requireAdmin
 usersRoutes.get("/", requireAuth, requireAdmin, mostrarUsuario); 
-usersRoutes.delete("/:id", requireAuth, requireAdmin, eliminarUsuario);
 usersRoutes.delete("/:id", requireAuth, requireAdmin, eliminarUsuarioYCarrito);
 
 // Usuario autenticado (Acceso al dueño o a un admin)

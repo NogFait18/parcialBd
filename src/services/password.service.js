@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
 export const hashPassword = async(contrasena)=>{
     return await bcrypt.hash(contrasena,10)

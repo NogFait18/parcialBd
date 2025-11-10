@@ -13,17 +13,17 @@ import {
 
 export const pedidosRoutes = express.Router();
 
-// 👤 Rutas de usuario (requieren token)
+// Rutas de usuario (requieren token)
 // Corrección: verifyToken -> requireAuth
 pedidosRoutes.post("/:usuarioId", requireAuth, crearPedido);
 pedidosRoutes.get("/user/:userId", requireAuth, listarPedidosPorUsuario);
 
-// 🧮 Solo admin
+// Solo admin
 // Corrección: verifyToken -> requireAuth, verifyAdmin -> requireAdmin
 pedidosRoutes.get("/stats", requireAuth, requireAdmin, obtenerEstadisticasPedidos);
 pedidosRoutes.patch("/:id/status", requireAuth, requireAdmin, actualizarEstadoPedido);
 
-// 🧩 Otras (pueden ser públicas o protegidas según tu lógica)
+// Otras (pueden ser públicas o protegidas según tu lógica)
 // Corrección: verifyToken -> requireAuth, verifyAdmin -> requireAdmin
 pedidosRoutes.get("", requireAuth, requireAdmin, listarPedidos); // listar todos -> admin
 pedidosRoutes.get("/:id", requireAuth, obtenerPedidoPorId); // Corrección: verifyToken -> requireAuth

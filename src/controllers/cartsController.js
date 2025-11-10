@@ -1,4 +1,5 @@
 import { Cart } from "../models/carts.js";
+import {Product} from "../models/products.js"
 
 //POST/api/carrito
 //para crear un carrito
@@ -65,8 +66,7 @@ export const obtenerCarrito = async (req, res) => {
 
 export const agregarProducto = async (req, res) => {
     try {
-        const {usuarioId} = req.params
-        const { productoId, cantidad } = req.body;
+        const { usuarioId, productoId, cantidad } = req.body;
 
         // Verificar si el producto existe
         const producto = await Product.findById(productoId);

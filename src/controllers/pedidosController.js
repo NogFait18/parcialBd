@@ -39,7 +39,7 @@ export const crearPedido = async (req, res) => {
             await Product.findByIdAndUpdate(item.producto, { $inc: { stock: -item.cantidad } });
         }
 
-        const nuevoPedido = new pedido({ 
+        const nuevoPedido = new Pedido({ 
             usuario: usuarioId,
             items: itemsDePedido,
             total: totalPedido,
@@ -59,7 +59,7 @@ export const crearPedido = async (req, res) => {
 // GET /api/ordenes
 export const listarPedidos = async (req, res) => {
     try {
-        const pedidos = await pedido.aggregate([ 
+        const pedidos = await Pedido.aggregate([ 
             { $lookup: { from: 'users', localField: 'usuario', foreignField: '_id', as: 'usuarioInfo' } },
             { $unwind: '$usuarioInfo' },
             { $project: { _id: 1, fechaPedido: 1, estado: 1, total: 1, metodoPago: 1, items: 1, usuarioNombre: '$usuarioInfo.nombre', usuarioEmail: '$usuarioInfo.email', direccionEnvio: 1 } },
@@ -75,7 +75,7 @@ export const listarPedidos = async (req, res) => {
 export const listarPedidosPorUsuario = async (req, res) => {
     try {
         const { userId } = req.params;
-        const pedidos = await pedido.find({ usuario: userId }) // <-- USAMOS MODELO NUEVO
+        const pedidos = await Pedido.find({ usuario: userId }) // <-- USAMOS MODELO NUEVO
             .populate('usuario', 'nombre email')
             .sort({ fechaPedido: -1 });
         if (pedidos.length === 0) return res.status(404).json({ success: false, message: "No se encontraron pedidos." });
@@ -92,7 +92,7 @@ export const actualizarEstadoPedido = async (req, res) => {
         const { nuevoEstado } = req.body;
         if (!nuevoEstado) return res.status(400).json({ success: false, error: 'El campo nuevoEstado es obligatorio.' });
         
-        const pedidoActualizado = await pedido.findByIdAndUpdate( // <-- USAMOS MODELO NUEVO
+        const pedidoActualizado = await Pedido.findByIdAndUpdate( // <-- USAMOS MODELO NUEVO
             id,
             { $set: { estado: nuevoEstado } },
             { new: true, runValidators: true }
@@ -107,7 +107,7 @@ export const actualizarEstadoPedido = async (req, res) => {
 // GET /api/ordenes/stats
 export const obtenerEstadisticasPedidos = async (req, res) => {
     try {
-        const stats = await pedido.aggregate([ // <-- USAMOS MODELO NUEVO
+        const stats = await Pedido.aggregate([ // <-- USAMOS MODELO NUEVO
             { $group: { _id: "$estado", totalPedidos: { $count: {} } } },
             { $sort: { totalPedidos: -1 } }
         ]);
@@ -120,7 +120,7 @@ export const obtenerEstadisticasPedidos = async (req, res) => {
 // GET /api/ordenes/:id
 export const obtenerPedidoPorId = async (req, res) => {
     try {
-        const pedido = await pedido.findById(req.params.id) // <-- USAMOS MODELO NUEVO
+        const pedido = await Pedido.findById(req.params.id) // <-- USAMOS MODELO NUEVO
             .populate('usuario', 'nombre email')
             .populate('items.producto', 'nombre precio');
         if (!pedido) return res.status(404).json({ success: false, message: "Pedido no encontrado." });
@@ -133,7 +133,7 @@ export const obtenerPedidoPorId = async (req, res) => {
 // DELETE /api/ordenes/:id
 export const eliminarPedido = async (req, res) => {
     try {
-        const pedidoEliminado = await pedido.findByIdAndDelete(req.params.id); // <-- USAMOS MODELO NUEVO
+        const pedidoEliminado = await Pedido.findByIdAndDelete(req.params.id); // <-- USAMOS MODELO NUEVO
         if (!pedidoEliminado) return res.status(404).json({ success: false, message: "Pedido no encontrado." });
         res.status(200).json({ success: true, message: "Pedido eliminado." });
     } catch (error) {
